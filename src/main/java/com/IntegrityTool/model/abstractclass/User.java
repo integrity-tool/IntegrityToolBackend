@@ -3,6 +3,11 @@ package com.IntegrityTool.model.abstractclass;
 import java.sql.Date;
 import java.util.ArrayList;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name="User")
 public abstract class User extends Person {
     private String password;
     private String newPassword;
