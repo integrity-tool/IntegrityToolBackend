@@ -18,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
-    private AuthenticationService _authenticationService;
+    private final AuthenticationService _authenticationService;
 
     @Autowired
     public AuthenticationController(AuthenticationService authenticationService) {
@@ -54,7 +54,11 @@ public class AuthenticationController {
             String status = row.getOrDefault("Status", "").toString();
             String emailid = row.getOrDefault("emailid", "").toString();
 
-            ApiResponse<String> registerResponse = ApiResponse.success(HttpStatus.OK.value(),status, emailid);
+            int httpStatus = -1;
+            if(String.valueOf(status).equals("Invalid email or password!")) 
+                httpStatus = HttpStatus.UNAUTHORIZED.value();
+                
+            ApiResponse<String> registerResponse = ApiResponse.success(httpStatus,status, emailid);
             return new ResponseEntity<>(registerResponse, HttpStatus.OK);
         } catch (Exception e) {
             ApiResponse<String> errorResponse = ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(),e.getLocalizedMessage(),null);
