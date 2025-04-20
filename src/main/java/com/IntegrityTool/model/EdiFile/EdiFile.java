@@ -2,6 +2,7 @@ package com.IntegrityTool.model.EdiFile;
 
 import java.io.InputStream;
 import java.security.Timestamp;
+import java.util.UUID;
 
 import com.IntegrityTool.model.Patient.Patient;
 
@@ -18,7 +19,7 @@ public class EdiFile {
     private Patient patient;
 
     public EdiFile(String fileId, String fileType, String fileName, String filePath, InputStream fileInputStream,Timestamp createdAt, String originalHash, String backupFilePath, String integrityStatus, Patient patient) {
-        this.fileId = fileId;
+        this.fileId = UUID.randomUUID().toString();
         this.fileType = fileType;
         this.fileName = fileName;
         this.filePath = filePath;

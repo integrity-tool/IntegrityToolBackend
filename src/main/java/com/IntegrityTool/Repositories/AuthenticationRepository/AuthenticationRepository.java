@@ -6,7 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.SqlOutParameter;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
-import com.IntegrityTool.Repositories.Interface.IAuthentication.IAuthentication;
+
+import com.IntegrityTool.Repositories.Interface.IAuthenticationModule;
 import com.IntegrityTool.model.Authentication.LoginParam;
 import com.IntegrityTool.model.abstractClasses.Person;
 import com.IntegrityTool.service.util.CommonService;
@@ -16,7 +17,7 @@ import java.sql.Timestamp;
 import org.springframework.jdbc.core.SqlParameter;
 
 @Repository
-public class AuthenticationRepository implements IAuthentication {
+public class AuthenticationRepository implements IAuthenticationModule {
 
     private final ConnectionManager connectionManager;
 

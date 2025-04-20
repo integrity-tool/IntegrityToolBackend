@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.IntegrityTool.DTO.ApiResponse;
-import com.IntegrityTool.service.AuthenticationService.AuthenticationService;
+import com.IntegrityTool.service.DoctorService.DoctorService;
 
 @RestController
 @RequestMapping("/doctor")
@@ -23,10 +24,11 @@ public class DoctorController {
     @Value("${spring.fileuploaddirectory.path}")
     private String UPLOAD_DIR;
 
-    private final AuthenticationService _authenticationService;
+    private final DoctorService _doctorService;
 
-    public DoctorController(AuthenticationService authenticationService) {
-        this._authenticationService = authenticationService;
+    @Autowired
+    public DoctorController(DoctorService doctorService) {
+        this._doctorService = doctorService;
     }
 
     
@@ -43,6 +45,7 @@ public class DoctorController {
                 Path filePath = Paths.get(UPLOAD_DIR, fileName);
                 Files.write(filePath, file.getBytes());
                 fileNames.append(fileName).append(", ");
+                // storeFileData(file);
             }    
             ApiResponse<String> fileResponse = ApiResponse.success(HttpStatus.OK.value(), "File uploaded successfully",null);
             return new ResponseEntity<>(fileResponse, HttpStatus.OK);
@@ -52,11 +55,23 @@ public class DoctorController {
         }
     }
 
-    private void StoreFileData() {
+    private ResponseEntity<ApiResponse<String>> storeFileData(MultipartFile file) {
         try {
-            
+            this._doctorService.storeFileData(file);
+            return null;
         } catch (Exception e) {
-            // TODO: handle exception
+            ApiResponse<String> errorResponse = ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(),e.getLocalizedMessage(),null);
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    
+    // private ResponseEntity<ApiResponse<String>> parseEDIFile(String ediContent) {
+    //     try{
+    //         Smooks smooks = new Smooks("smooks-config.xml");
+    //         this._doctorService.parseEDIFile(smooks,ediContent);
+    //     }catch(Exception e) {
+    //         ApiResponse<String> errorResponse = ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(),e.getLocalizedMessage(),null);
+    //         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    //     }
+    // }
 }
