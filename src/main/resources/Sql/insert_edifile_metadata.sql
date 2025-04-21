@@ -1,0 +1,1 @@
+INSERT INTO edi_file (file_type, file_name, file_size, file_path, original_hash, backup_file_path,integrity_status,userid) VALUES (?,?,?,?,?,?,?,?);

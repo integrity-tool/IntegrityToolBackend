@@ -1,33 +1,64 @@
 package com.IntegrityTool.model.EdiFile;
 
-import java.io.InputStream;
-import java.security.Timestamp;
-import java.util.UUID;
-
-import com.IntegrityTool.model.Patient.Patient;
+import java.sql.Timestamp;
 
 public class EdiFile {
-    private String fileId;
     private String fileType;
     private String fileName;
+    private Long fileSize;
     private String filePath;
-    private InputStream fileInputStream;
-    private Timestamp createdAt;
-    private String originalHash;
+    private Timestamp createdTimeStamp;
+    private byte[] originalHash;
     private String backupFilePath;
     private String integrityStatus;
-    private Patient patient;
+    private String userId;
 
-    public EdiFile(String fileId, String fileType, String fileName, String filePath, InputStream fileInputStream,Timestamp createdAt, String originalHash, String backupFilePath, String integrityStatus, Patient patient) {
-        this.fileId = UUID.randomUUID().toString();
+    public EdiFile(String fileType, String fileName, Long fileSize, String filePath, byte[] originalHash,String backupFilePath, String integrityStatus, String userId) {
         this.fileType = fileType;
         this.fileName = fileName;
+        this.fileSize = fileSize;
         this.filePath = filePath;
-        this.fileInputStream = fileInputStream;
-        this.createdAt = createdAt;
+        this.createdTimeStamp = new Timestamp(System.currentTimeMillis());
         this.originalHash = originalHash;
         this.backupFilePath = backupFilePath;
         this.integrityStatus = integrityStatus;
-        this.patient = patient;
+        this.userId = userId;
     }
+
+    public String getFileType() {
+        return fileType;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public Timestamp getCreatedTimeStamp() {
+        return createdTimeStamp;
+    }
+
+    public byte[] getOriginalHash() {
+        return originalHash;
+    }
+
+    public String getBackupFilePath() {
+        return backupFilePath;
+    }
+
+    public String getIntegrityStatus() {
+        return integrityStatus;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
 }

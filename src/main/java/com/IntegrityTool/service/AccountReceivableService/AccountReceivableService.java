@@ -25,4 +25,8 @@ public class AccountReceivableService {
         return this._accountReceivableRepository.getAllFiles(directoryPath);
     }
 
+    public String getOriginalHashByFileName(String fileNameWithExtension) {
+        return this._accountReceivableRepository.getOriginalHashByFileName(fileNameWithExtension);
+    }
+
 }

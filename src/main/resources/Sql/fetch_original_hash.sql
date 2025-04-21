@@ -1,0 +1,1 @@
+SELECT original_hash FROM edi_file WHERE file_name = ?;

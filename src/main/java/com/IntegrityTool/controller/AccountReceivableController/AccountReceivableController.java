@@ -1,9 +1,12 @@
 package com.IntegrityTool.controller.AccountReceivableController;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +26,7 @@ import com.IntegrityTool.model.EdiFile.EdiTask;
 import com.IntegrityTool.service.AccountReceivableService.AccountReceivableService;
 import com.IntegrityTool.service.util.CMS1500PdfGenerator;
 import com.IntegrityTool.service.util.EdiParserService;
+import com.IntegrityTool.service.util.FileHashService;
 
 @RestController
 @RequestMapping("/accountReceivable")
@@ -34,14 +38,16 @@ public class AccountReceivableController {
 
     private final AccountReceivableService _accountReceivableService;
     private final EdiParserService _ediParserService;
+    private final FileHashService _fileHashService;
 
     @Autowired
     public AccountReceivableController(
-        AccountReceivableService accountReceivableService,
-        EdiParserService ediParserService
-    ) {
+            AccountReceivableService accountReceivableService,
+            EdiParserService ediParserService,
+            FileHashService fileHashService) {
         this._accountReceivableService = accountReceivableService;
         this._ediParserService = ediParserService;
+        this._fileHashService = fileHashService;
     }
 
     @GetMapping("/getAllFiles")
@@ -54,8 +60,7 @@ public class AccountReceivableController {
             }
 
             List<String> getAllFiles = this._accountReceivableService.getAllFiles(directoryPath);
-            ApiResponse<List<String>> allFiles = ApiResponse.success(HttpStatus.OK.value(),
-                    "Files fetched successfully", getAllFiles);
+            ApiResponse<List<String>> allFiles = ApiResponse.success(HttpStatus.OK.value(),"Files fetched successfully", getAllFiles);
             return new ResponseEntity(allFiles, HttpStatus.OK);
         } catch (Exception e) {
             ApiResponse<String> errorResponse = ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -72,12 +77,52 @@ public class AccountReceivableController {
             Map<String, Object> parseEdiFile = this._accountReceivableService.parseEDIFile(ediFileParam, UPLOAD_DIR);
             EdiTask ediTask = (EdiTask) parseEdiFile.get("ediFileMetaData");
             Map<String, Object> parsedFileMetaData = processFileQueue(ediTask);
-            List<Map<String,Object>> genereatedPdf = CMS1500PdfGenerator.generateClaimForm(parsedFileMetaData, ediFileParam.getFileName());
+            List<Map<String, Object>> genereatedPdf = CMS1500PdfGenerator.generateClaimForm(parsedFileMetaData,
+                    ediFileParam.getFileName());
 
-            ApiResponse<List<Map<String,Object>>> fileResponse = ApiResponse.success(HttpStatus.OK.value(),"File fetched successfully", genereatedPdf);
+            ApiResponse<List<Map<String, Object>>> fileResponse = ApiResponse.success(HttpStatus.OK.value(),
+                    "File fetched successfully", genereatedPdf);
             return new ResponseEntity(fileResponse, HttpStatus.OK);
         } catch (Exception e) {
-            ApiResponse<String> errorResponse = ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(),e.getLocalizedMessage(), null);
+            ApiResponse<String> errorResponse = ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getLocalizedMessage(), null);
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/checkIntegirty")
+    public ResponseEntity<ApiResponse<String>> checkIntegrity(@RequestBody EdiFileParam ediFileParam) {
+        try {
+            String fileNameWithExtension = ediFileParam.getFileName().concat(".edi");
+            ediFileParam.setFileName(fileNameWithExtension);
+            Map<String, Object> parseEdiFile = this._accountReceivableService.parseEDIFile(ediFileParam, UPLOAD_DIR);
+            EdiTask ediTask = (EdiTask) parseEdiFile.get("ediFileMetaData");
+            byte[] currentPayload = ediTask.getPayload();
+
+            byte[] currentHashBytes;
+            try (InputStream is = new ByteArrayInputStream(currentPayload)) {
+                currentHashBytes = this._fileHashService.generateHashBytes(is, fileNameWithExtension);
+            }
+
+            // Current hex
+            String currentHashHex = FileHashService.bytesToHex(currentHashBytes);
+
+            // 3. Fetch the original hash from the database
+            String storedOriginalHashHex = this._accountReceivableService
+                    .getOriginalHashByFileName(fileNameWithExtension);
+            boolean integrityMatch = currentHashHex.equalsIgnoreCase(storedOriginalHashHex);
+
+            Map<String, Object> resultSet = new HashMap();
+            if (integrityMatch == false)
+                resultSet.put("fileName", Collections.emptyMap());
+            resultSet.put("fileName", ediFileParam.getFileName());
+
+            ApiResponse<Map<String, Object>> fileResponse = ApiResponse.success(HttpStatus.OK.value(),
+                    "File fetched successfully", resultSet);
+            return new ResponseEntity(fileResponse, HttpStatus.OK);
+        } catch (Exception e) {
+            ApiResponse<String> errorResponse = ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getLocalizedMessage(), null);
             return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
