@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -62,6 +63,19 @@ public class AuthenticationController {
             return new ResponseEntity<>(registerResponse, HttpStatus.OK);
         } catch (Exception e) {
             ApiResponse<String> errorResponse = ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(),e.getLocalizedMessage(),null);
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/roles")
+    public ResponseEntity<ApiResponse<List<Map<String,Object>>>> getAllRoles() {
+        try {
+            List<Map<String,Object>> resultSet = this._authenticationService.getAllRoles();
+                
+            ApiResponse<List<Map<String,Object>>> registerResponse = ApiResponse.success(HttpStatus.OK.value(),"Roles fetched successfully", resultSet);
+            return new ResponseEntity<>(registerResponse, HttpStatus.OK);
+        } catch (Exception e) {
+            ApiResponse<List<Map<String,Object>>> errorResponse = ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(),e.getLocalizedMessage(),null);
             return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

@@ -4,6 +4,8 @@ import com.IntegrityTool.Repositories.AuthenticationRepository.AuthenticationRep
 import com.IntegrityTool.model.Authentication.LoginParam;
 import com.IntegrityTool.model.abstractClasses.Person;
 import com.IntegrityTool.model.abstractClasses.User;
+
+import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,5 +28,9 @@ public class AuthenticationService {
 
     public Map<String, Object> loginUser(LoginParam loginParam) {
         return this._authenticationRepository.loginUser(loginParam);
+    }
+
+    public List<Map<String,Object>> getAllRoles() {
+        return this._authenticationRepository.getAllRoles();
     }
 }
