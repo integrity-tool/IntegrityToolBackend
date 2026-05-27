@@ -30,7 +30,7 @@ public class EdiFileRepository implements IEdiFile {
         String query = this.sqlQueryLoader.getSqlQuery("insert_edifile_metadata");
         Objects.requireNonNull(query, "SQL query 'insert_edi_file_metadata' not found by SqlQueryLoader");
 
-        Map<String, Object> resultSet = new HashMap<>();
+        Map<String, Object> resultSet = new HashMap<>();//collection
         int result = jdbcTemplate.update(query,ediFile.getFileType(),ediFile.getFileName(),ediFile.getFileSize(),ediFile.getFilePath(),ediFile.getOriginalHash(),ediFile.getBackupFilePath(),ediFile.getIntegrityStatus(),ediFile.getUserId() );
         if (result == -1) {
             resultSet.put("message", "File MetaData has not been inserted");

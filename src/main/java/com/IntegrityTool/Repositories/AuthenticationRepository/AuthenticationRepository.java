@@ -1,9 +1,17 @@
 package com.IntegrityTool.Repositories.AuthenticationRepository;
 
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlOutParameter;
+import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
@@ -12,18 +20,19 @@ import com.IntegrityTool.model.Authentication.LoginParam;
 import com.IntegrityTool.model.abstractClasses.Person;
 import com.IntegrityTool.service.util.CommonService;
 import com.IntegrityTool.service.util.ConnectionManager;
-import java.sql.Types;
-import java.sql.Timestamp;
-import org.springframework.jdbc.core.SqlParameter;
+import com.IntegrityTool.service.util.SqlQueryLoader;
 
 @Repository
 public class AuthenticationRepository implements IAuthenticationModule {
 
     private final ConnectionManager connectionManager;
+    private final SqlQueryLoader sqlQueryLoader;
+
 
     @Autowired
-    public AuthenticationRepository(ConnectionManager connectionManager) {
+    public AuthenticationRepository(ConnectionManager connectionManager,SqlQueryLoader sqlQueryLoader) {
         this.connectionManager = connectionManager;
+        this.sqlQueryLoader = sqlQueryLoader;
     }
 
     @Override
@@ -69,12 +78,23 @@ public class AuthenticationRepository implements IAuthenticationModule {
 
     @Override
     public Map<String,Object> loginUser(LoginParam loginParam) {
-       SimpleJdbcCall simpleJdbcCall = this.connectionManager.getConnection().withProcedureName("login_user").declareParameters(new SqlParameter("emailId",Types.VARCHAR),new SqlParameter("password",Types.VARCHAR));
+        SimpleJdbcCall simpleJdbcCall = this.connectionManager.getConnection().withProcedureName("login_user").declareParameters(new SqlParameter("emailId",Types.VARCHAR),new SqlParameter("password",Types.VARCHAR));
         Map<String,Object> inParam = new HashMap<>();
         inParam.put(CommonService.convertToSnakeCase("emailId"), loginParam.getEmailId());
         inParam.put("password", loginParam.getPassword());
 
         Map<String,Object> resultSet = simpleJdbcCall.execute(inParam);
+        return resultSet;
+    }
+
+    @Override
+    public List<Map<String,Object>> getAllRoles() {
+        JdbcTemplate jdbcTemplate = this.connectionManager.getConnection().getJdbcTemplate();
+        String query = this.sqlQueryLoader.getSqlQuery("fetch_all_roles");
+        Objects.requireNonNull(query, "SQL query 'fetch_all_roles' not found by SqlQueryLoader");
+
+        List<Map<String,Object>> resultSet = new ArrayList<>();
+        resultSet = jdbcTemplate.queryForList(query);
         return resultSet;
     }
 
@@ -107,4 +127,6 @@ public class AuthenticationRepository implements IAuthenticationModule {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'updateProfile'");
     }
+
+    
 }

@@ -43,7 +43,7 @@ public class DoctorController {
         }
         try {
             StringBuilder fileNames = new StringBuilder("Files uploaded successfully: ");
-            for (MultipartFile file : files) {
+            for (MultipartFile file : files) { // i=0 ; X222-COB-claim-from-billing-provider-to-payer-b i = 1  X222-COB-claim-from-payer-a-to-payer-b-in-payer-to-payer
                 String fileName = file.getOriginalFilename();
                 Path filePath = Paths.get(UPLOAD_DIR, fileName);
                 Files.write(filePath, file.getBytes());
